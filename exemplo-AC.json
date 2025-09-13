@@ -1,0 +1,62 @@
+[
+  {
+    "SiglaUf": "AC",
+    "Estado": "Acre",
+    "Municipio": "RIO BRANCO",
+    "LocalVerificacao": "BR 364 KM 124,4 - RIO BRANCO/ACRE",
+    "DataUltimaVerificacao": "03/07/2025",
+    "DataValidade": "02/07/2026",
+    "UltimoResultado": "Aprovado",
+    "TipoMedidor": "Fixo",
+    "Faixas": [
+      {
+        "NumeroFaixa": "2",
+        "NumeroInmetro": "14826019",
+        "NumeroSerie": "FLICD2106A00575",
+        "Sentido": "CRESCENTE",
+        "VelocidadeNominal": "40"
+      },
+      {
+        "NumeroFaixa": "1",
+        "NumeroInmetro": "14826019",
+        "NumeroSerie": "FLICD2106A00575",
+        "Sentido": "CRESCENTE",
+        "VelocidadeNominal": "40"
+      }
+    ],
+    "Historico": [
+      {
+        "NumeroCertificado": "15020220",
+        "NumeroEnsaio": "2",
+        "Ano": "2024",
+        "DataLaudo": "04/07/2024",
+        "DataValidade": "03/07/2025",
+        "TipoServico": "Periódica",
+        "Resultado": "Aprovado"
+      },
+      {
+        "NumeroCertificado": "15020222",
+        "NumeroEnsaio": "1",
+        "Ano": "2025",
+        "DataLaudo": "03/07/2025",
+        "DataValidade": "02/07/2026",
+        "TipoServico": "Periódica",
+        "Resultado": "Aprovado"
+      },
+      {
+        "NumeroCertificado": "15020219",
+        "NumeroEnsaio": "1",
+        "Ano": "2023",
+        "DataLaudo": "10/07/2023",
+        "DataValidade": "09/07/2024",
+        "TipoServico": "Periódica",
+        "Resultado": "Aprovado"
+      }
+    ],
+    "Proprietario": {
+      "Nome": "DATA TRAFFIC S/A",
+      "Municipio": "APARECIDA DE GOIÂNIA",
+      "Estado": "GO"
+    }
+  }
+]

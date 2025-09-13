@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Consulta Instrumentos INMETRO</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-card {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #2563eb;
+            background: #f8fafc;
+        }
+        
+        .upload-area.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #06b6d4);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .log-area {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-cog"></i>
+                    <h1>Painel de Administração</h1>
+                </div>
+                <p class="subtitle">Gerenciamento de Dados do Sistema INMETRO</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <!-- Status Atual -->
+        <div class="admin-card">
+            <h2><i class="fas fa-info-circle"></i> Status do Sistema</h2>
+            <div class="status-info" id="status-info">
+                <div class="status-card">
+                    <h3>Status do Banco</h3>
+                    <p id="db-status">Verificando...</p>
+                </div>
+                <div class="status-card">
+                    <h3>Total de Registros</h3>
+                    <p id="total-records">0</p>
+                </div>
+                <div class="status-card">
+                    <h3>Última Atualização</h3>
+                    <p id="last-update-admin">Nunca</p>
+                </div>
+                <div class="status-card">
+                    <h3>Estados Cadastrados</h3>
+                    <p id="total-states">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carregar Dados da API -->
+        <div class="admin-card">
+            <h2><i class="fas fa-cloud-download-alt"></i> Carregar da API do INMETRO</h2>
+            <p>Carrega dados diretamente da API oficial do RBMLQ-I para todos os estados.</p>
+            
+            <div class="action-buttons">
+                <button id="load-api-btn" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Carregar da API
+                </button>
+                <button id="load-sample-btn" class="btn btn-secondary">
+                    <i class="fas fa-file-alt"></i> Carregar Dados de Exemplo
+                </button>
+            </div>
+
+            <div id="api-progress" class="hidden">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p id="progress-text">Preparando...</p>
+            </div>
+        </div>
+
+        <!-- Upload de Arquivo -->
+        <div class="admin-card">
+            <h2><i class="fas fa-file-upload"></i> Importar Arquivo JSON</h2>
+            <p>Faça upload de um arquivo JSON com dados dos medidores.</p>
+            
+            <div class="upload-area" id="upload-area">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #6b7280; margin-bottom: 1rem;"></i>
+                <p>Clique aqui ou arraste um arquivo JSON</p>
+                <p style="font-size: 0.875rem; color: #6b7280;">Formatos aceitos: .json (máximo 50MB)</p>
+            </div>
+            
+            <input type="file" id="file-input" accept=".json" style="display: none;">
+        </div>
+
+        <!-- Log de Atividades -->
+        <div class="admin-card">
+            <h2><i class="fas fa-terminal"></i> Log de Atividades</h2>
+            <div class="log-area" id="log-area">Sistema iniciado...\n</div>
+        </div>
+
+        <!-- Ações do Sistema -->
+        <div class="admin-card">
+            <h2><i class="fas fa-tools"></i> Ações do Sistema</h2>
+            <div class="action-buttons">
+                <button id="view-site-btn" class="btn btn-success">
+                    <i class="fas fa-external-link-alt"></i> Ver Site Principal
+                </button>
+                <button id="export-data-btn" class="btn btn-secondary">
+                    <i class="fas fa-download"></i> Exportar Dados
+                </button>
+                <button id="clear-data-btn" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Limpar Todos os Dados
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/database.js"></script>
+    <script>
+        class AdminPanel {
+            constructor() {
+                this.db = new InmetroDatabase();
+                this.initializeAdmin();
+            }
+
+            async initializeAdmin() {
+                try {
+                    await this.db.init();
+                    await this.updateStatus();
+                    this.setupEventListeners();
+                    this.log('Sistema de administração iniciado com sucesso');
+                } catch (error) {
+                    this.log('Erro ao inicializar sistema: ' + error.message, 'error');
+                }
+            }
+
+            async updateStatus() {
+                try {
+                    const hasData = await this.db.hasData();
+                    const metadata = await this.db.getMetadata();
+                    
+                    document.getElementById('db-status').textContent = hasData ? 'Dados carregados' : 'Sem dados';
+                    
+                    if (hasData) {
+                        const stats = await this.db.getStats();
+                        document.getElementById('total-records').textContent = stats.total.toLocaleString('pt-BR');
+                        document.getElementById('total-states').textContent = stats.estados;
+                        
+                        if (metadata) {
+                            const date = new Date(metadata.value);
+                            document.getElementById('last-update-admin').textContent = date.toLocaleString('pt-BR');
+                        }
+                    } else {
+                        document.getElementById('total-records').textContent = '0';
+                        document.getElementById('total-states').textContent = '0';
+                        document.getElementById('last-update-admin').textContent = 'Nunca';
+                    }
+                } catch (error) {
+                    this.log('Erro ao atualizar status: ' + error.message, 'error');
+                }
+            }
+
+            setupEventListeners() {
+                // Carregar da API
+                document.getElementById('load-api-btn').addEventListener('click', () => {
+                    this.loadFromAPI();
+                });
+
+                // Carregar dados de exemplo
+                document.getElementById('load-sample-btn').addEventListener('click', () => {
+                    this.loadSampleData();
+                });
+
+                // Upload de arquivo
+                const uploadArea = document.getElementById('upload-area');
+                const fileInput = document.getElementById('file-input');
+
+                uploadArea.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => this.handleFileUpload(e.target.files[0]));
+
+                // Drag and drop
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('dragover');
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type === 'application/json') {
+                        this.handleFileUpload(file);
+                    }
+                });
+
+                // Outras ações
+                document.getElementById('view-site-btn').addEventListener('click', () => {
+                    window.open('index.html', '_blank');
+                });
+
+                document.getElementById('export-data-btn').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                document.getElementById('clear-data-btn').addEventListener('click', () => {
+                    this.clearAllData();
+                });
+            }
+
+            async loadFromAPI() {
+                const progressDiv = document.getElementById('api-progress');
+                const progressFill = document.getElementById('progress-fill');
+                const progressText = document.getElementById('progress-text');
+                const loadBtn = document.getElementById('load-api-btn');
+
+                try {
+                    loadBtn.disabled = true;
+                    progressDiv.classList.remove('hidden');
+                    
+                    this.log('Iniciando carregamento da API do INMETRO...');
+                    
+                    const estados = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+                    const allData = [];
+                    let loaded = 0;
+
+                    for (const estado of estados) {
+                        try {
+                            progressText.textContent = `Carregando ${estado}...`;
+                            const url = `https://corsproxy.io/?https://servicos.rbmlq.gov.br/dados-abertos/${estado}/medidores.json`;
+                            
+                            const response = await fetch(url);
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (Array.isArray(data) && data.length > 0) {
+                                    allData.push(...data);
+                                    this.log(`${estado}: ${data.length} registros carregados`);
+                                } else {
+                                    this.log(`${estado}: Sem dados disponíveis`);
+                                }
+                            } else {
+                                this.log(`${estado}: Erro HTTP ${response.status}`, 'warning');
+                            }
+                        } catch (error) {
+                            this.log(`${estado}: Erro - ${error.message}`, 'warning');
+                        }
+
+                        loaded++;
+                        const progress = (loaded / estados.length) * 100;
+                        progressFill.style.width = progress + '%';
+                    }
+
+                    if (allData.length > 0) {
+                        progressText.textContent = 'Salvando no banco de dados...';
+                        await this.db.saveData(allData);
+                        this.log(`Dados salvos com sucesso! Total: ${allData.length} registros`);
+                        await this.updateStatus();
+                    } else {
+                        this.log('Nenhum dado foi carregado da API', 'error');
+                    }
+
+                } catch (error) {
+                    this.log('Erro no carregamento da API: ' + error.message, 'error');
+                } finally {
+                    loadBtn.disabled = false;
+                    progressDiv.classList.add('hidden');
+                    progressFill.style.width = '0%';
+                }
+            }
+
+            async loadSampleData() {
+                try {
+                    this.log('Carregando dados de exemplo...');
+                    const response = await fetch('assets/js/dados-exemplo.json');
+                    const data = await response.json();
+                    
+                    // Gerar dados adicionais
+                    const additionalData = this.generateAdditionalData();
+                    const allData = [...data, ...additionalData];
+                    
+                    await this.db.saveData(allData);
+                    this.log(`Dados de exemplo carregados: ${allData.length} registros`);
+                    await this.updateStatus();
+                } catch (error) {
+                    this.log('Erro ao carregar dados de exemplo: ' + error.message, 'error');
+                }
+            }
+
+            generateAdditionalData() {
+                // Aqui você pode adicionar a mesma lógica de geração de dados do script principal
+                // Por simplicidade, vou retornar um array vazio
+                return [];
+            }
+
+            async handleFileUpload(file) {
+                if (!file || file.type !== 'application/json') {
+                    this.log('Por favor, selecione um arquivo JSON válido', 'error');
+                    return;
+                }
+
+                try {
+                    this.log(`Processando arquivo: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+                    
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    if (!Array.isArray(data)) {
+                        throw new Error('O arquivo deve conter um array de objetos JSON');
+                    }
+
+                    await this.db.saveData(data);
+                    this.log(`Arquivo importado com sucesso: ${data.length} registros`);
+                    await this.updateStatus();
+                    
+                } catch (error) {
+                    this.log('Erro ao importar arquivo: ' + error.message, 'error');
+                }
+            }
+
+            async exportData() {
+                try {
+                    const data = await this.db.loadData();
+                    if (data.length === 0) {
+                        this.log('Não há dados para exportar', 'warning');
+                        return;
+                    }
+
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `inmetro-dados-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    this.log(`Dados exportados: ${data.length} registros`);
+                } catch (error) {
+                    this.log('Erro ao exportar dados: ' + error.message, 'error');
+                }
+            }
+
+            async clearAllData() {
+                if (confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita.')) {
+                    try {
+                        await this.db.clearData();
+                        this.log('Todos os dados foram removidos');
+                        await this.updateStatus();
+                    } catch (error) {
+                        this.log('Erro ao limpar dados: ' + error.message, 'error');
+                    }
+                }
+            }
+
+            log(message, type = 'info') {
+                const logArea = document.getElementById('log-area');
+                const timestamp = new Date().toLocaleTimeString('pt-BR');
+                const prefix = type === 'error' ? '[ERRO]' : type === 'warning' ? '[AVISO]' : '[INFO]';
+                
+                logArea.textContent += `${timestamp} ${prefix} ${message}\n`;
+                logArea.scrollTop = logArea.scrollHeight;
+                
+                console.log(`${prefix} ${message}`);
+            }
+        }
+
+        // Inicializar painel de administração
+        new AdminPanel();
+    </script>
+</body>
+</html>

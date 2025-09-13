@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta Instrumentos INMETRO - Medidores de Velocidade</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛣️</text></svg>">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h1>Consulta Instrumentos INMETRO</h1>
+                </div>
+                <p class="subtitle">Sistema de Consulta de Medidores de Velocidade</p>
+                <div class="header-actions">
+                    <a href="admin.html" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-cog"></i> Painel Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Carregando dados...</p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Demo Notice -->
+            <div class="demo-notice">
+                <div class="demo-content">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Modo Demonstração:</strong> Este site utiliza dados de exemplo para demonstração das funcionalidades. 
+                        Inclui dados simulados de múltiplos estados brasileiros para teste completo dos filtros.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Overview -->
+            <section class="dashboard" id="dashboard">
+                <h2><i class="fas fa-chart-bar"></i> Dashboard Geral</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-medidores">0</h3>
+                            <p>Total de Medidores</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon approved">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-aprovados">0</h3>
+                            <p>Aprovados</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon rejected">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-reprovados">0</h3>
+                            <p>Reprovados</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-estados">0</h3>
+                            <p>Estados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Distribuição por Estado</h3>
+                        <canvas id="estadosChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Status dos Medidores</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters Section -->
+            <section class="filters-section">
+                <h2><i class="fas fa-filter"></i> Filtros</h2>
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="filter-estados">Estados:</label>
+                        <select id="filter-estados" multiple>
+                            <option value="">Todos os Estados</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-cidades">Cidades:</label>
+                        <select id="filter-cidades" multiple>
+                            <option value="">Todas as Cidades</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-resultado">Resultado:</label>
+                        <select id="filter-resultado">
+                            <option value="">Todos</option>
+                            <option value="Aprovado">Aprovado</option>
+                            <option value="Reprovado">Reprovado</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-tipo">Tipo de Medidor:</label>
+                        <select id="filter-tipo">
+                            <option value="">Todos</option>
+                            <option value="Fixo">Fixo</option>
+                            <option value="Móvel">Móvel</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="search-input">Buscar:</label>
+                        <input type="text" id="search-input" placeholder="Local, proprietário, número...">
+                    </div>
+
+                    <div class="filter-actions">
+                        <button id="apply-filters" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Aplicar Filtros
+                        </button>
+                        <button id="clear-filters" class="btn btn-secondary">
+                            <i class="fas fa-eraser"></i> Limpar
+                        </button>
+                        <button id="export-data" class="btn btn-success">
+                            <i class="fas fa-download"></i> Exportar CSV
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <div class="results-header">
+                    <h2><i class="fas fa-table"></i> Resultados</h2>
+                    <div class="results-info">
+                        <span id="results-count">0 resultados encontrados</span>
+                        <div class="pagination-info">
+                            <span id="pagination-info"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div class="table-container">
+                    <table id="results-table" class="results-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="Estado">Estado <i class="fas fa-sort"></i></th>
+                                <th data-sort="Municipio">Cidade <i class="fas fa-sort"></i></th>
+                                <th data-sort="LocalVerificacao">Local <i class="fas fa-sort"></i></th>
+                                <th data-sort="UltimoResultado">Status <i class="fas fa-sort"></i></th>
+                                <th data-sort="TipoMedidor">Tipo <i class="fas fa-sort"></i></th>
+                                <th data-sort="DataValidade">Validade <i class="fas fa-sort"></i></th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-tbody">
+                            <!-- Results will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination" id="pagination">
+                        <!-- Pagination buttons will be generated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal for Details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalhes do Medidor</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Consulta Instrumentos INMETRO - Dados obtidos via API oficial do RBMLQ-I</p>
+            <p>Última atualização: <span id="last-update"></span></p>
+        </div>
+    </footer>
+
+    <script src="assets/js/database.js"></script>
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
