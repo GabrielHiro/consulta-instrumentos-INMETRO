@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - Consulta Instrumentos INMETRO</title>
+                  <button id="load-sample-btn" class="btn btn-success">
+                    <i class="fas fa-database"></i> Carregar Base de Dados
+                </button>title>Painel Admin - Consulta Instrumentos INMETRO</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -200,6 +202,9 @@
         </div>
     </main>
 
+    <!-- Scripts da aplicação -->
+    <script src="assets/js/dados-exemplo.js"></script>
+    <script src="assets/js/database-static.js"></script>
     <script src="assets/js/database.js"></script>
     <script>
         class AdminPanel {
@@ -213,7 +218,7 @@
                     await this.db.init();
                     await this.updateStatus();
                     this.setupEventListeners();
-                    this.log('Sistema de administração iniciado com sucesso');
+                    this.log('Sistema de administração iniciado com sucesso - IndexedDB pronto');
                 } catch (error) {
                     this.log('Erro ao inicializar sistema: ' + error.message, 'error');
                 }
@@ -251,7 +256,7 @@
                     this.loadFromAPI();
                 });
 
-                // Carregar dados de exemplo
+                // Carregar base de dados
                 document.getElementById('load-sample-btn').addEventListener('click', () => {
                     this.loadSampleData();
                 });
@@ -358,19 +363,20 @@
 
             async loadSampleData() {
                 try {
-                    this.log('Carregando dados de exemplo...');
-                    const response = await fetch('assets/js/dados-exemplo.json');
-                    const data = await response.json();
+                    this.log('Carregando base de dados local...');
+                    
+                    // Usar dados embutidos em vez de fetch
+                    const data = getDadosExemplo();
                     
                     // Gerar dados adicionais
                     const additionalData = this.generateAdditionalData();
                     const allData = [...data, ...additionalData];
                     
                     await this.db.saveData(allData);
-                    this.log(`Dados de exemplo carregados: ${allData.length} registros`);
+                    this.log(`Base de dados carregada: ${allData.length} registros`);
                     await this.updateStatus();
                 } catch (error) {
-                    this.log('Erro ao carregar dados de exemplo: ' + error.message, 'error');
+                    this.log('Erro ao carregar base de dados: ' + error.message, 'error');
                 }
             }
 
@@ -433,7 +439,7 @@
                 if (confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita.')) {
                     try {
                         await this.db.clearData();
-                        this.log('Todos os dados foram removidos');
+                        this.log('Todos os dados foram removidos do IndexedDB');
                         await this.updateStatus();
                     } catch (error) {
                         this.log('Erro ao limpar dados: ' + error.message, 'error');
