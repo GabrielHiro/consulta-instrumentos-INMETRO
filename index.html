@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta Instrumentos INMETRO - Medidores de Velocidade</title>
+    <title>RBMLQ-I - Consulta de Instrumentos de Medição | INMETRO</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛣️</text></svg>">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@
                     <i class="fas fa-tachometer-alt"></i>
                     <h1>Consulta Instrumentos INMETRO</h1>
                 </div>
-                <p class="subtitle">Sistema de Consulta de Medidores de Velocidade</p>
+                <p class="subtitle">Rede Brasileira de Metrologia Legal e Qualidade - RBMLQ-I</p>
                 <div class="header-actions">
                     <a href="admin.html" class="btn btn-secondary btn-sm">
                         <i class="fas fa-cog"></i> Painel Admin
@@ -37,81 +37,221 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="container">
-            <!-- Demo Notice -->
-            <div class="demo-notice">
-                <div class="demo-content">
-                    <i class="fas fa-info-circle"></i>
-                    <div>
-                        <strong>Modo Demonstração:</strong> Este site utiliza dados de exemplo para demonstração das funcionalidades. 
-                        Inclui dados simulados de múltiplos estados brasileiros para teste completo dos filtros.
-                    </div>
-                </div>
-            </div>
-
             <!-- Dashboard Overview -->
             <section class="dashboard" id="dashboard">
-                <h2><i class="fas fa-chart-bar"></i> Dashboard Geral</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-list"></i>
+                <div class="dashboard-header">
+                    <h2><i class="fas fa-chart-bar"></i> Dashboard Geral</h2>
+                    <div class="dashboard-controls">
+                        <select id="dashboard-period" class="dashboard-select">
+                            <option value="all">Todos os períodos</option>
+                            <option value="current">Válidos atualmente</option>
+                            <option value="expired">Vencidos</option>
+                            <option value="recent">Últimos 6 meses</option>
+                        </select>
+                        <select id="dashboard-region" class="dashboard-select">
+                            <option value="all">Todas as regiões</option>
+                            <option value="norte">Norte</option>
+                            <option value="nordeste">Nordeste</option>
+                            <option value="centro-oeste">Centro-Oeste</option>
+                            <option value="sudeste">Sudeste</option>
+                            <option value="sul">Sul</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Métricas Principais -->
+                <div class="metrics-grid">
+                    <div class="metric-card primary">
+                        <div class="metric-icon">
+                            <i class="fas fa-tachometer-alt"></i>
                         </div>
-                        <div class="stat-info">
-                            <h3 id="total-medidores">0</h3>
-                            <p>Total de Medidores</p>
+                        <div class="metric-content">
+                            <div class="metric-value" id="total-medidores">0</div>
+                            <div class="metric-label">Total de Medidores</div>
+                            <div class="metric-change" id="medidores-change">-</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon approved">
+
+                    <div class="metric-card success">
+                        <div class="metric-icon">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="stat-info">
-                            <h3 id="total-aprovados">0</h3>
-                            <p>Aprovados</p>
+                        <div class="metric-content">
+                            <div class="metric-value" id="total-aprovados">0</div>
+                            <div class="metric-label">Aprovados</div>
+                            <div class="metric-change" id="aprovados-percent">0%</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon rejected">
+
+                    <div class="metric-card danger">
+                        <div class="metric-icon">
                             <i class="fas fa-times-circle"></i>
                         </div>
-                        <div class="stat-info">
-                            <h3 id="total-reprovados">0</h3>
-                            <p>Reprovados</p>
+                        <div class="metric-content">
+                            <div class="metric-value" id="total-reprovados">0</div>
+                            <div class="metric-label">Reprovados</div>
+                            <div class="metric-change" id="reprovados-percent">0%</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
+
+                    <div class="metric-card info">
+                        <div class="metric-icon">
                             <i class="fas fa-map-marker-alt"></i>
                         </div>
-                        <div class="stat-info">
-                            <h3 id="total-estados">0</h3>
-                            <p>Estados</p>
+                        <div class="metric-content">
+                            <div class="metric-value" id="total-estados">0</div>
+                            <div class="metric-label">Estados</div>
+                            <div class="metric-change" id="estados-info">-</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card warning">
+                        <div class="metric-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="total-vencidos">0</div>
+                            <div class="metric-label">Vencidos</div>
+                            <div class="metric-change" id="vencidos-percent">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card secondary">
+                        <div class="metric-icon">
+                            <i class="fas fa-road"></i>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="velocidade-media">0</div>
+                            <div class="metric-label">Velocidade Média</div>
+                            <div class="metric-change">km/h</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts -->
-                <div class="charts-grid">
-                    <div class="chart-container">
-                        <h3>Distribuição por Estado</h3>
+                <!-- Gráficos Principais -->
+                <div class="charts-main-grid">
+                    <div class="chart-container large">
+                        <div class="chart-header">
+                            <h3>Distribuição por Estado</h3>
+                            <div class="chart-controls">
+                                <button class="chart-btn active" data-chart="estados" data-type="bar">
+                                    <i class="fas fa-chart-bar"></i>
+                                </button>
+                                <button class="chart-btn" data-chart="estados" data-type="map">
+                                    <i class="fas fa-map"></i>
+                                </button>
+                            </div>
+                        </div>
                         <canvas id="estadosChart"></canvas>
                     </div>
-                    <div class="chart-container">
-                        <h3>Status dos Medidores</h3>
+
+                    <div class="chart-container medium">
+                        <div class="chart-header">
+                            <h3>Status dos Medidores</h3>
+                            <div class="chart-info" id="status-info">Taxa de aprovação: 0%</div>
+                        </div>
                         <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráficos Comparativos -->
+                <div class="charts-secondary-grid">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Distribuição por Tipo</h3>
+                        </div>
+                        <canvas id="tipoChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Velocidades Nominais</h3>
+                        </div>
+                        <canvas id="velocidadeChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Verificações por Ano</h3>
+                        </div>
+                        <canvas id="anoChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Rankings -->
+                <div class="rankings-grid">
+                    <div class="ranking-card">
+                        <h3><i class="fas fa-trophy"></i> Top 5 Estados</h3>
+                        <div class="ranking-list" id="ranking-estados">
+                            <!-- Preenchido via JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="ranking-card">
+                        <h3><i class="fas fa-city"></i> Top 5 Cidades</h3>
+                        <div class="ranking-list" id="ranking-cidades">
+                            <!-- Preenchido via JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="ranking-card">
+                        <h3><i class="fas fa-building"></i> Top 5 Proprietários</h3>
+                        <div class="ranking-list" id="ranking-proprietarios">
+                            <!-- Preenchido via JavaScript -->
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Filters Section -->
             <section class="filters-section">
-                <h2><i class="fas fa-filter"></i> Filtros</h2>
+                <div class="filters-header">
+                    <h2><i class="fas fa-filter"></i> Filtros Avançados</h2>
+                    <div class="filters-summary" id="filters-summary">
+                        <span class="filter-badge" id="active-filters-count">0 filtros ativos</span>
+                    </div>
+                </div>
+
+                <!-- Filtros Rápidos -->
+                <div class="quick-filters">
+                    <button class="quick-filter active" data-filter="all">
+                        <i class="fas fa-list"></i> Todos
+                    </button>
+                    <button class="quick-filter" data-filter="approved">
+                        <i class="fas fa-check-circle"></i> Apenas Aprovados
+                    </button>
+                    <button class="quick-filter" data-filter="rejected">
+                        <i class="fas fa-times-circle"></i> Apenas Reprovados
+                    </button>
+                    <button class="quick-filter" data-filter="expired">
+                        <i class="fas fa-clock"></i> Vencidos
+                    </button>
+                    <button class="quick-filter" data-filter="recent">
+                        <i class="fas fa-calendar"></i> Recentes
+                    </button>
+                </div>
+
+                <!-- Filtros Detalhados -->
                 <div class="filters-container">
+                    <!-- Localização -->
+                    <div class="filter-group">
+                        <label for="filter-regiao">Região:</label>
+                        <select id="filter-regiao">
+                            <option value="">Todas as Regiões</option>
+                            <option value="norte">Norte</option>
+                            <option value="nordeste">Nordeste</option>
+                            <option value="centro-oeste">Centro-Oeste</option>
+                            <option value="sudeste">Sudeste</option>
+                            <option value="sul">Sul</option>
+                        </select>
+                    </div>
+
                     <div class="filter-group">
                         <label for="filter-estados">Estados:</label>
                         <select id="filter-estados" multiple>
                             <option value="">Todos os Estados</option>
                         </select>
+                        <small class="filter-help">Ctrl+Click para múltipla seleção</small>
                     </div>
 
                     <div class="filter-group">
@@ -119,8 +259,10 @@
                         <select id="filter-cidades" multiple>
                             <option value="">Todas as Cidades</option>
                         </select>
+                        <small class="filter-help">Máximo 50 cidades mostradas</small>
                     </div>
 
+                    <!-- Status e Tipo -->
                     <div class="filter-group">
                         <label for="filter-resultado">Resultado:</label>
                         <select id="filter-resultado">
@@ -139,21 +281,60 @@
                         </select>
                     </div>
 
+                    <!-- Velocidade -->
                     <div class="filter-group">
-                        <label for="search-input">Buscar:</label>
-                        <input type="text" id="search-input" placeholder="Local, proprietário, número...">
+                        <label for="filter-velocidade">Velocidade Nominal:</label>
+                        <div class="range-filter">
+                            <input type="range" id="velocity-min" min="0" max="120" value="0" class="range-input">
+                            <input type="range" id="velocity-max" min="0" max="120" value="120" class="range-input">
+                            <div class="range-labels">
+                                <span id="velocity-min-label">0 km/h</span>
+                                <span id="velocity-max-label">120 km/h</span>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- Período -->
+                    <div class="filter-group">
+                        <label for="filter-data-inicio">Período de Verificação:</label>
+                        <div class="date-range">
+                            <input type="date" id="filter-data-inicio" placeholder="Data início">
+                            <span>até</span>
+                            <input type="date" id="filter-data-fim" placeholder="Data fim">
+                        </div>
+                    </div>
+
+                    <!-- Busca -->
+                    <div class="filter-group full-width">
+                        <label for="search-input">Busca Textual:</label>
+                        <div class="search-container">
+                            <input type="text" id="search-input" placeholder="Local, proprietário, número do certificado...">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Ações -->
                     <div class="filter-actions">
                         <button id="apply-filters" class="btn btn-primary">
                             <i class="fas fa-search"></i> Aplicar Filtros
                         </button>
                         <button id="clear-filters" class="btn btn-secondary">
-                            <i class="fas fa-eraser"></i> Limpar
+                            <i class="fas fa-eraser"></i> Limpar Todos
+                        </button>
+                        <button id="save-filter" class="btn btn-info">
+                            <i class="fas fa-bookmark"></i> Salvar Filtro
                         </button>
                         <button id="export-data" class="btn btn-success">
                             <i class="fas fa-download"></i> Exportar CSV
                         </button>
+                    </div>
+                </div>
+
+                <!-- Filtros Salvos -->
+                <div class="saved-filters" id="saved-filters" style="display: none;">
+                    <h4><i class="fas fa-bookmark"></i> Filtros Salvos</h4>
+                    <div class="saved-filters-list" id="saved-filters-list">
+                        <!-- Preenchido via JavaScript -->
                     </div>
                 </div>
             </section>
@@ -162,38 +343,105 @@
             <section class="results-section">
                 <div class="results-header">
                     <h2><i class="fas fa-table"></i> Resultados</h2>
-                    <div class="results-info">
-                        <span id="results-count">0 resultados encontrados</span>
-                        <div class="pagination-info">
-                            <span id="pagination-info"></span>
+                    <div class="results-controls">
+                        <div class="results-info">
+                            <span id="results-count">0 resultados encontrados</span>
+                            <div class="pagination-info">
+                                <span id="pagination-info"></span>
+                            </div>
+                        </div>
+                        <div class="view-controls">
+                            <select id="items-per-page" class="control-select">
+                                <option value="10">10 por página</option>
+                                <option value="25">25 por página</option>
+                                <option value="50">50 por página</option>
+                                <option value="100">100 por página</option>
+                            </select>
+                            <div class="view-toggle">
+                                <button class="view-btn active" data-view="table">
+                                    <i class="fas fa-table"></i>
+                                </button>
+                                <button class="view-btn" data-view="cards">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Results Table -->
-                <div class="table-container">
-                    <table id="results-table" class="results-table">
-                        <thead>
-                            <tr>
-                                <th data-sort="Estado">Estado <i class="fas fa-sort"></i></th>
-                                <th data-sort="Municipio">Cidade <i class="fas fa-sort"></i></th>
-                                <th data-sort="LocalVerificacao">Local <i class="fas fa-sort"></i></th>
-                                <th data-sort="UltimoResultado">Status <i class="fas fa-sort"></i></th>
-                                <th data-sort="TipoMedidor">Tipo <i class="fas fa-sort"></i></th>
-                                <th data-sort="DataValidade">Validade <i class="fas fa-sort"></i></th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="results-tbody">
-                            <!-- Results will be populated by JavaScript -->
-                        </tbody>
-                    </table>
+                <!-- Loading Indicator for Results -->
+                <div id="results-loading" class="results-loading hidden">
+                    <div class="loading-spinner"></div>
+                    <span>Processando filtros...</span>
+                </div>
+
+                <!-- Table View -->
+                <div id="table-view" class="table-view">
+                    <div class="table-container">
+                        <table id="results-table" class="results-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="Estado">
+                                        Estado <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th data-sort="Municipio">
+                                        Cidade <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th data-sort="LocalVerificacao">
+                                        Local <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th data-sort="UltimoResultado">
+                                        Status <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th data-sort="TipoMedidor">
+                                        Tipo <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th data-sort="DataValidade">
+                                        Validade <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-tbody">
+                                <!-- Results will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Cards View -->
+                <div id="cards-view" class="cards-view hidden">
+                    <div class="cards-grid" id="cards-grid">
+                        <!-- Cards will be populated by JavaScript -->
+                    </div>
                 </div>
 
                 <!-- Pagination -->
                 <div class="pagination-container">
-                    <div class="pagination" id="pagination">
-                        <!-- Pagination buttons will be generated by JavaScript -->
+                    <div class="pagination-controls">
+                        <button id="pagination-first" class="pagination-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </button>
+                        <button id="pagination-prev" class="pagination-btn">
+                            <i class="fas fa-angle-left"></i> Anterior
+                        </button>
+                        
+                        <div class="pagination" id="pagination">
+                            <!-- Pagination buttons will be generated by JavaScript -->
+                        </div>
+                        
+                        <button id="pagination-next" class="pagination-btn">
+                            Próximo <i class="fas fa-angle-right"></i>
+                        </button>
+                        <button id="pagination-last" class="pagination-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="pagination-jump">
+                        <span>Ir para página:</span>
+                        <input type="number" id="page-jump" min="1" class="page-input">
+                        <button id="jump-btn" class="btn btn-sm">Ir</button>
                     </div>
                 </div>
             </section>
@@ -216,12 +464,15 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 Consulta Instrumentos INMETRO - Dados obtidos via API oficial do RBMLQ-I</p>
-            <p>Última atualização: <span id="last-update"></span></p>
+            <p>&copy; 2025 RBMLQ-I - Rede Brasileira de Metrologia Legal e Qualidade | INMETRO</p>
+            <p>Sistema oficial de consulta de instrumentos de medição de velocidade | Última atualização: <span id="last-update"></span></p>
         </div>
     </footer>
 
+    <!-- Scripts da aplicação -->
+    <script src="assets/js/dados-exemplo.js"></script>
+    <script src="assets/js/database-static.js"></script>
     <script src="assets/js/database.js"></script>
-    <script src="assets/js/script.js"></script>
+    <script src="assets/js/script-production.js"></script>
 </body>
 </html>
